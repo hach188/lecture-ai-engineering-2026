@@ -30,10 +30,12 @@ def _names(entry: dict) -> list[str]:
 
 
 def search_glossary(query: str) -> str:
-    """講座の用語集から用語を検索し、定義と、どの回で扱うかを返す。
+    """講座の用語集から用語を検索し、定義・関連語・扱う回を返す。
 
-    AIエンジニアリングの用語や、この講座（AIE2026）に固有の言葉について
-    答える前に使うこと。query には調べたい用語を1つだけ入れる（例: "LoRA"）。
+    AIエンジニアリングやAIE2026の用語を説明するときに使う。
+    比較など複数の用語を含む質問では、用語をすべて1つの query にまとめて
+    一度に検索する（例: "LoRAとQLoRA"）。質問文全体ではなく、調べたい用語を指定する。
+    講義の要点だけを尋ねられた場合は get_lecture_summary を使う。
     """
     q = _normalize(query)
     if not q:
@@ -71,7 +73,8 @@ def search_glossary(query: str) -> str:
 def get_lecture_summary(lecture: int) -> str:
     """指定した回（1始まりの整数）の講義の要点を返す。
 
-    「第3回では何を学ぶ？」のように、回の内容や関係を聞かれたときに使う。
+    「第3回では何を学ぶ？」など、特定の回の内容や要点を聞かれたときに使う。
+    lecture には質問で指定された回を渡す。用語の定義や確認問題には使わない。
     """
     path = DATA_DIR / "lectures" / f"{lecture:02d}.md"
     if not path.exists():
@@ -81,10 +84,11 @@ def get_lecture_summary(lecture: int) -> str:
 
 
 def make_quiz(lecture: int) -> str:
-    """指定した回の用語から１つを選び、確認問題として答えを返す。
+    """指定した回の用語から1つ選び、確認問題と正答を返す。
 
-    「第2回の確認問題を出して」のように、
-     復習用の問題を求められたときに使う。
+    「第2回の確認問題を出して」など、利用者が問題やクイズを求めたときに使う。
+    lecture には質問で指定された回を渡す。通常は問題文だけを利用者に提示し、
+    正答は利用者が答えを求めたとき、または回答後の採点時にだけ示す。
     """
     terms = [entry for entry in load_glossary() if entry["lecture"] == lecture]
     if not terms:
